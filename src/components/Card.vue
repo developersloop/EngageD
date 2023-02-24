@@ -2,8 +2,11 @@
   <q-card class="my-card">
     <img :src="card?.image" />
     <q-card-section class="section">
-      <div class="text-h6">{{ card?.name }}t</div>
-      <div class="text-subtitle2" @click="$router.push('/details-character')">
+      <div class="text-h6">{{ card?.name }}</div>
+      <div
+        class="text-subtitle2"
+        @click="$router.push(`/character/${card?.id}`)"
+      >
         Ver detalhes
       </div>
     </q-card-section>

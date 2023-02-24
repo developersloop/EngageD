@@ -10,6 +10,7 @@ import "@quasar/extras/fontawesome-v5/fontawesome-v5.css";
 
 import { DefaultApolloClient } from "@vue/apollo-composable";
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
+import { vue3Debounce } from "vue-debounce";
 
 const cache = new InMemoryCache();
 
@@ -31,4 +32,5 @@ createApp({
   })
   .use(store)
   .use(router)
+  .directive("debounce", vue3Debounce({ lock: true }))
   .mount("#app");

@@ -1,20 +1,14 @@
 <template>
   <div class="list-personagens">
-    <list-personagens></list-personagens>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
 import { ref } from "vue";
-import ListPersonagens from "./components/ListPersonagens.vue";
 
 export default {
   name: "LayoutDefault",
-
-  components: {
-    ListPersonagens,
-  },
-
   setup() {
     return {
       leftDrawerOpen: ref(false),
@@ -22,7 +16,7 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .list-personagens {
   display: flex;
   flex-flow: column;
@@ -33,6 +27,8 @@ export default {
 
   @media (max-width: 1024.99px) {
     padding: 20px;
+    height: inherit;
+		overflow: auto;
   }
 
   @media (min-width: 1025px) {

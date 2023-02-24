@@ -1,24 +1,28 @@
 <template>
   <div
     class="characters-fun"
-    :class="!result?.characters.results.length ? '-empty' : ''"
+    :class="!resultado?.characters.results.length ? '-empty' : ''"
   >
-    <div v-show="result?.characters.results.length" class="search">
-      <q-input v-model="search" label="Digite o nome do personagem" />
+    <div v-show="resultado?.characters.results.length" class="search">
+      <q-input
+        v-model="search"
+        label="Digite o nome do personagem"
+        v-debounce:1000ms="teste"
+      />
     </div>
-    <div v-if="loading">Carregando...</div>
-    <div v-if="error">Tente novamente mais tarde :(</div>
-    <div v-if="!result?.characters.results.length && !loading && !error">
+    <div v-if="loader">Carregando...</div>
+    <div v-if="err">Tente novamente mais tarde :(</div>
+    <div v-if="!resultado?.characters.results.length && !loader && !err">
       Não existe cards disponiveis
     </div>
     <div
       v-else
       class="scrollable"
-      :class="!result?.characters.results.length ? '-no__scrollable' : ''"
+      :class="!resultado?.characters.results.length ? '-no__scrollable' : ''"
     >
       <div
         class="card"
-        v-for="(character, index) in result?.characters?.results"
+        v-for="(character, index) in resultado?.characters?.results"
         :key="index"
       >
         <card :card="character" />
@@ -28,47 +32,90 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, onMounted, computed } from "vue";
+import {
+  defineComponent,
+  reactive,
+  ref,
+  onMounted,
+  onBeforeMount,
+  computed,
+  watchEffect,
+} from "vue";
 import Card from "./Card.vue";
 import gql from "graphql-tag";
-import { useQuery } from "@vue/apollo-composable";
+import { useQuery, useLazyQuery } from "@vue/apollo-composable";
 
-const CHARACTERS_QUERY = gql`
-  query Characters {
-    characters {
-      results {
-        id
-        name
-        image
-      }
-    }
-    episodesByIds(ids: [1, 2]) {
-      id
-    }
-  }
-`;
 export default defineComponent({
   name: "ListPersonagens",
   components: {
     Card,
   },
   setup() {
-    const { result, loading, error } = useQuery(CHARACTERS_QUERY);
-
-    console.log(result);
     let search = ref("");
+    let resul = ref();
+    let load = ref();
+    let wrong = ref();
+
+    function teste() {
+      const a = gql`
+        query Characters {
+          characters {
+            results {
+              id
+              name
+              image
+            }
+          }
+        }
+      `;
+
+      useQuery(a, {
+        variables: {
+          searcText: search,
+        },
+      });
+    }
+    onBeforeMount(() => {
+      const { result, loading, error } = useQuery(gql`
+        query Characters {
+          characters {
+            results {
+              id
+              name
+              image
+            }
+          }
+        }
+      `);
+      resul.value = result;
+      load.value = loading;
+      wrong.value = error;
+    });
+
+    let resultado = computed(() => {
+      return resul.value.value;
+    });
+
+    let err = computed(() => {
+      return wrong.value.value;
+    });
+
+    let loader = computed(() => {
+      return load.value.value;
+    });
 
     return {
-      result,
+      resultado,
       search,
-      loading,
-      error,
+      loader,
+      err,
+      teste,
     };
   },
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .characters-fun {
   width: unset;
   display: flex;
