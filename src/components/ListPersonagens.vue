@@ -3,7 +3,7 @@
     class="characters-fun"
     :class="!resultado?.characters.results.length ? '-empty' : ''"
   >
-    <div v-show="resultado?.characters.results.length" class="search">
+    <div class="search">
       <q-input
         v-model="search"
         label="Digite o nome do personagem"
@@ -32,18 +32,10 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  reactive,
-  ref,
-  onMounted,
-  onBeforeMount,
-  computed,
-  watchEffect,
-} from "vue";
+import { defineComponent, ref, onBeforeMount, computed } from "vue";
 import Card from "./Card.vue";
 import gql from "graphql-tag";
-import { useQuery, useLazyQuery } from "@vue/apollo-composable";
+import { useQuery } from "@vue/apollo-composable";
 
 export default defineComponent({
   name: "ListPersonagens",
@@ -57,23 +49,20 @@ export default defineComponent({
     let wrong = ref();
 
     function teste() {
-      const a = gql`
-        query Characters {
-          characters {
-            results {
-              id
-              name
-              image
-            }
+      const filter = resul.value.value.characters.results.filter(
+        (character: any) => {
+          if (search.value) {
+            return character.name.includes(`${search.value}`);
+          } else {
+            window.location.reload();
           }
         }
-      `;
-
-      useQuery(a, {
-        variables: {
-          searcText: search,
+      );
+      resul.value.value = {
+        characters: {
+          results: [...filter],
         },
-      });
+      };
     }
     onBeforeMount(() => {
       const { result, loading, error } = useQuery(gql`
