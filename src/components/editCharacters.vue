@@ -43,7 +43,7 @@
   <div v-if="!loading && error" class="error">Tente novament mais tarde :(</div>
 </template>
 <script>
-import { defineComponent, onBeforeMount, reactive } from "vue";
+import { defineComponent } from "vue";
 import gql from "graphql-tag";
 import { useQuery } from "@vue/apollo-composable";
 
@@ -100,7 +100,7 @@ export default defineComponent({
     margin-top: 10px;
     color: #00b4ff;
     cursor: pointer;
-		@media (min-width: 1024px) {
+    @media (min-width: 1024px) {
       font-size: 30px;
     }
   }

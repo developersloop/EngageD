@@ -15,8 +15,7 @@
 </template>
 
 <script lang="ts">
-import stateInterface from "@/interfaces/state";
-import { defineComponent, reactive } from "vue";
+import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "Card",
@@ -26,11 +25,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup() {
-    let state: stateInterface = reactive({
-      card: {},
-    });
-  },
+  setup() {},
 });
 </script>
 <style lang="scss" scoped>

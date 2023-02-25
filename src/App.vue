@@ -28,7 +28,7 @@ export default {
   @media (max-width: 1024.99px) {
     padding: 20px;
     height: inherit;
-		overflow: auto;
+    overflow: auto;
   }
 
   @media (min-width: 1025px) {
