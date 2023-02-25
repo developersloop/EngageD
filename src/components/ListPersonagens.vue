@@ -28,11 +28,24 @@
         <card :card="character" />
       </div>
     </div>
+    <q-pagination
+      style="margin: 20px"
+      v-model="page"
+      :max-pages="6"
+      :max="max"
+      direction-links
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeMount, computed } from "vue";
+import {
+  defineComponent,
+  ref,
+  onBeforeMount,
+  computed,
+  watchEffect,
+} from "vue";
 import Card from "./Card.vue";
 import gql from "graphql-tag";
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
@@ -54,14 +67,26 @@ export default defineComponent({
     let resul = ref();
     let load = ref();
     let wrong = ref();
+    let page = ref(1);
 
+    watchEffect(() => {
+      if (Number.isNaN(page.value)) page.value = 1;
+      if (page.value) fetchCharacters(search?.value, page.value);
+    });
     function searched() {
-      fetchCharacters(search?.value);
+      page.value = 1;
+      fetchCharacters(search?.value, page.value);
     }
-    function fetchCharacters(term: string | any = null) {
+    function fetchCharacters(
+      term: string | any = "",
+      page: string | number = 0
+    ) {
       let query = gql`
         query Characters {
-          characters {
+          characters(page: ${page}, filter: { name: "${term}" }) {
+            info {
+              pages
+            }
             results {
               id
               name
@@ -70,20 +95,8 @@ export default defineComponent({
           }
         }
       `;
-      let querySearch = gql`
-        query Characters {
-          characters(filter: { name: "${term}" }) {
-            results {
-              id
-              name
-              image
-            }
-          }
-        }
-      `;
-      const queryResult = term ? querySearch : query;
       const { result, loading, error } = provideApolloClient(apolloClient)(() =>
-        useQuery(queryResult)
+        useQuery(query)
       );
       resul.value = result;
       load.value = loading;
@@ -105,11 +118,16 @@ export default defineComponent({
       return load.value.value;
     });
 
+    let max = computed(() => {
+      return !search.value ? 42 : resul?.value?.value?.characters?.info?.pages;
+    });
     return {
       resultado,
       search,
       loader,
       err,
+      page,
+      max,
       searched,
     };
   },
