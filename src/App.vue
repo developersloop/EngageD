@@ -5,11 +5,21 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, provide } from "vue";
+import { DefaultApolloClient } from "@vue/apollo-composable";
+import { ApolloClient, InMemoryCache } from "@apollo/client/core";
+
+const cache = new InMemoryCache();
+
+const apolloClient = new ApolloClient({
+  cache,
+  uri: "https://rickandmortyapi.com/graphql",
+});
 
 export default {
   name: "LayoutDefault",
   setup() {
+    provide(DefaultApolloClient, apolloClient);
     return {
       leftDrawerOpen: ref(false),
     };

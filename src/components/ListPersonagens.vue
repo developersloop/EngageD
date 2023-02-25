@@ -7,7 +7,7 @@
       <q-input
         v-model="search"
         label="Digite o nome do personagem"
-        v-debounce:1000ms="teste"
+        v-debounce:1000ms="searched"
       />
     </div>
     <div v-if="loader">Carregando...</div>
@@ -35,8 +35,15 @@
 import { defineComponent, ref, onBeforeMount, computed } from "vue";
 import Card from "./Card.vue";
 import gql from "graphql-tag";
-import { useQuery } from "@vue/apollo-composable";
+import { ApolloClient, InMemoryCache } from "@apollo/client/core";
+import { useQuery, provideApolloClient } from "@vue/apollo-composable";
 
+const cache = new InMemoryCache();
+
+const apolloClient = new ApolloClient({
+  cache,
+  uri: "https://rickandmortyapi.com/graphql",
+});
 export default defineComponent({
   name: "ListPersonagens",
   components: {
@@ -48,24 +55,11 @@ export default defineComponent({
     let load = ref();
     let wrong = ref();
 
-    function teste() {
-      const filter = resul.value.value.characters.results.filter(
-        (character: any) => {
-          if (search.value) {
-            return character.name.includes(`${search.value}`);
-          } else {
-            window.location.reload();
-          }
-        }
-      );
-      resul.value.value = {
-        characters: {
-          results: [...filter],
-        },
-      };
+    function searched() {
+      fetchCharacters(search?.value);
     }
-    onBeforeMount(() => {
-      const { result, loading, error } = useQuery(gql`
+    function fetchCharacters(term: string | any = null) {
+      let query = gql`
         query Characters {
           characters {
             results {
@@ -75,10 +69,28 @@ export default defineComponent({
             }
           }
         }
-      `);
+      `;
+      let querySearch = gql`
+        query Characters {
+          characters(filter: { name: "${term}" }) {
+            results {
+              id
+              name
+              image
+            }
+          }
+        }
+      `;
+      const queryResult = term ? querySearch : query;
+      const { result, loading, error } = provideApolloClient(apolloClient)(() =>
+        useQuery(queryResult)
+      );
       resul.value = result;
       load.value = loading;
       wrong.value = error;
+    }
+    onBeforeMount(() => {
+      fetchCharacters();
     });
 
     let resultado = computed(() => {
@@ -98,7 +110,7 @@ export default defineComponent({
       search,
       loader,
       err,
-      teste,
+      searched,
     };
   },
 });
